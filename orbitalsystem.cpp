@@ -1,3 +1,7 @@
+#include <cmath>
+#include <vector>
+#include <map>
+
 namespace orb
 {
     class Vec3d
@@ -22,19 +26,19 @@ namespace orb
 		y = vec.y;
 		z = vec.z;
 	    }
-	Vec3d operator+(const Vec3d & vec)
+	Vec3d operator+(const Vec3d & vec) const
 	    {
 		return Vec3d(this->x+vec.x, this->y+vec.y, this->z+vec.z);
 	    }
-	Vec3d operator-()
+	Vec3d operator-() const
 	    {
 		return Vec3d(-(this->x), -(this->y), -(this->z));
 	    }
-	Vec3d operator-(const Vec3d & vec)
+	Vec3d operator-(const Vec3d & vec) const
 	    {
 		return Vec3d(this->x-vec.x, this->y-vec.y, this->z-vec.z);
 	    }
-	double length()
+	double length() const
 	    {
 		return std::sqrt((this->x)*(this->x)+(this->y)*(this->y)+(this->z)*(this->z));
 	    }
@@ -95,7 +99,7 @@ namespace orb
     class OrbitalSystem
     {
     private:
-	map<int, Body*> bodies;
+	std::map<int, Body*> bodies;
 	double timestep;
 	double gravity;
 	int counter;
@@ -113,9 +117,16 @@ namespace orb
 		timestep = ts;
 		gravity = g;
 	    }
+	~OrbitalSystem()
+	    {
+		for(auto x : bodies)
+		{
+		    delete (x.second);
+		}
+	    }
 	int addBody(Body b)
 	    {
-		bodies[counter] = b;
+		bodies[counter] = new Body(b);
 		return counter++;
 	    }
 	int removeBody(int key)
@@ -138,16 +149,16 @@ namespace orb
 	    {
 		gravity = g;
 	    }
-	vector<pair<int, Body> > status()
+	std::vector<std::pair<int, Body> > status()
 	    {
-		vector<pair<int, Body> > statusVector;
+		std::vector<std::pair<int, Body> > statusVector;
 		for(auto z : bodies)
-		    statusVector.push_back(pair<int, Body>(z.first, *(z.second)));
+		    statusVector.push_back(std::pair<int, Body>(z.first, *(z.second)));
 		return statusVector;
 	    }
 	void step()
 	    {
-		map<int, Vec3d> accels;
+		std::map<int, Vec3d> accels;
 		for(auto x : bodies)
 		{
 		    accels[x.first]=Vec3d(0,0,0);
@@ -156,7 +167,7 @@ namespace orb
 			if(x.first != y.first)
 			{
 			    double d = distance(x.second->pos, y.second->pos);
-			    accels[x.first] = accels[x.first] + (y.second->mass*g/(d*d*d))*(y.second->pos-x.second->pos);
+			    accels[x.first] = accels[x.first] + (y.second->mass*gravity/(d*d*d))*(y.second->pos-x.second->pos);
 			}
 		    }
 		}
@@ -165,7 +176,7 @@ namespace orb
 		    x.second->update(accels[x.first], timestep);
 		}
 	    }
-    }
+    };
 
 
 }

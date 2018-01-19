@@ -1,4 +1,4 @@
-#orbital-simulator
+# orbital-simulator
 
 A orbital mechanics simulator, mostly for amusement and learning.
 
